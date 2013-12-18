@@ -25,7 +25,7 @@
  * @todo: yaml
  */
 
-namespace classifier;
+namespace opus\classifier;
 
 use yii\base\Application;
 use yii\base\InvalidConfigException;
@@ -40,7 +40,7 @@ use yii\db\ActiveRecord;
  * @author Ivo Kund <ivo@opus.ee>
  * @package opus\yii2\classifier
  */
-class Classifier extends base\Classifier
+class Classifier extends opus\base\Classifier
 {
     /**
      * @var array Use this to override default classifier model names
