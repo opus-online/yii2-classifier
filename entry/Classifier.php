@@ -5,9 +5,9 @@
  * @date 18.12.13
  */
 
-namespace classifier\entry;
+namespace opus\classifier\entry;
 
-use classifier\base\Entry;
+use opus\classifier\base\Entry;
 
 /**
  * Class Classifier. Override this to have your own classifier entry model (add custom methods etc)
