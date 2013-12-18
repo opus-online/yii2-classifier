@@ -40,7 +40,7 @@ use yii\db\ActiveRecord;
  * @author Ivo Kund <ivo@opus.ee>
  * @package opus\yii2\classifier
  */
-class Classifier extends opus\base\Classifier
+class Classifier extends base\Classifier
 {
     /**
      * @var array Use this to override default classifier model names
