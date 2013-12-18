@@ -15,9 +15,6 @@
 			"email": "ivo@opus.ee"
 		}
 	],
-	"require": {
-		"yiisoft/yii2": "*"
-	},
 	"autoload": {
 		"psr-0": {
 			"opus\\classifier\\": ""
