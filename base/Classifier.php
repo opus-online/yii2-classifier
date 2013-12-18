@@ -1,308 +1,184 @@
 <?php
 /**
- * Implement this class to access classifier functionality.
-
- * ------- SETUP -------
  *
- * You can use this class in two ways:
- *
- *
- *
- * ------- CHANGELOG -------
- *
- * 2013-02-28
- *    - Initial commit
- * 2013-05-30
- *    - Support for localized values
- * 2013-05-31
- *  - Added $simpleList parameter to getList
- * 2013-12-18
- *  - Completely rewrote most of the functionality to support Yii2 and Composer
- *
- * @todo: usage
- * @todo: github & composer
- * @todo: auto-table-create
- * @todo: yaml
+ * @author Ivo Kund <ivo@opus.ee>
+ * @date 18.12.13
  */
 
-namespace opus\classifier;
+namespace opus\classifier\base;
 
-use yii\base\Application;
-use yii\base\InvalidConfigException;
-use yii\caching\DummyCache;
-use yii\db\ActiveRecord;
 
-;
+use opus\classifier\entry\Classifier as ClassifierEntry;
+use opus\classifier\entry\Value;
+use yii\base\Component;
+use yii\base\InvalidCallException;
+use yii\base\InvalidParamException;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class Classifier
  *
  * @author Ivo Kund <ivo@opus.ee>
- * @package opus\yii2\classifier
+ * @package classifier\base
  */
-class Classifier extends base\Classifier
+class Classifier extends Component
 {
     /**
-     * @var array Use this to override default classifier model names
-     */
-    public $classMap = [
-        'Classifier' => 'Classifier',
-        'ClassifierValue' => 'ClassifierValue',
-        'ClassifierValueI18n' => 'ClassifierValueI18n',
-    ];
-    /**
-     * @var array Use this to override field names if you don't like the default ones
-     */
-    public $attributeMap = [
-        // Classifier and ClassifierValue
-        'id' => 'id',
-        'code' => 'code',
-        // ClassifierValue
-        'classifier_id' => 'classifier_id',
-        // ClassifierValueI18n
-        'classifier_code' => 'classifier_code',
-    ];
-    /**
-     * Set this to a prefix/namespace if you are otherwise ok with the default model class names. This will be prepended
-     * to all classes in $classMap
+     * Holds classifier objects by ID
      *
-     * @var string
+     * @var array
      */
-    public $modelPrefix;
-    /**
-     * @var bool Whether to use internationalization features
-     */
-    public $useI18n = true;
-    /**
-     * Sets the cache duration. 0 Means caching is disabled
-     *
-     * @var integer
-     */
-    public $cachingDuration = 0;
-    /**
-     * Sets the cache duration
-     *
-     * @var integer
-     */
-    public $cacheID = 'cache';
-    /**
-     * Used for logging and caching
-     *
-     * @var string
-     */
-    public $myNamespace = 'vendors.opus.classifier';
-    /**
-     * Language used for retrieving localized values
-     *
-     * @var string
-     */
-    public $language;
-    /**
-     * @var Application
-     */
-    public $app;
+    protected $mapById;
 
     /**
-     * @param array $config
-     * @throws \yii\base\InvalidConfigException
-     * @internal param array $params
+     * Holds classifier objects and values
+     *
+     * @var array[]
      */
-    public function __construct($config)
+    protected $mapByCode;
+
+    /**
+     * Holds classifier value objects by ID
+     *
+     * @var array
+     */
+    protected $valueMapById = array();
+
+    /**
+     * Holds classifier value objects and values
+     *
+     * @var array
+     */
+    protected $valueMapByCode = array();
+
+    /**
+     * Holds localized classifier value objects and values
+     *
+     * @var array
+     */
+    protected $localizedValueMap;
+
+    /**
+     * Returns a classifier by its ID or CODE
+     *
+     * @param string|int $identifier Number (ID) or String (code)
+     * @throws \yii\base\InvalidParamException
+     * @return \classifier\entry\Classifier
+     */
+    public function get($identifier)
     {
-        $this->app = \Yii::$app;
-
-        $this->language = \Yii::$app->language;
-        \Yii::configure($this, $config);
-
-        if (null !== $this->modelPrefix) {
-            if (isset($config['classMap'])) {
-                throw new InvalidConfigException('Sorry, you cannot use \'modelPrefix\' and \'classMap\' together');
-            }
-            foreach ($this->classMap as $class => $mapTo) {
-                $this->classMap[$class] = $this->modelPrefix . $mapTo;
-            }
+        $classifier = null;
+        if (is_numeric($identifier) && isset($this->mapById[$identifier]))
+        {
+            $classifier = $this->mapById[$identifier];
+        }
+        elseif (isset($this->mapByCode[$identifier]))
+        {
+            $classifier = $this->mapByCode[$identifier]['classifier'];
         }
 
-        $this->init();
+        if (null === $classifier)
+        {
+            throw new InvalidParamException(sprintf('Accessed unknown classifier "%s", no matches found using CODE nor ID', $identifier));
+        }
+
+        return $this->normalizeClassifier($classifier);
     }
 
     /**
-     * Initializes the component
+     * Returns a classifier value by its ID or CODES (parent and self)
+     * Usage:
+     * -   getValue(3)
+     * -   getValue('PARENT_CODE', 'VALUE_CODE')
      *
-     * @return void
+     * @throws \yii\base\InvalidParamException
+     * @throws \yii\base\InvalidCallException
+     * @return \classifier\entry\Value
      */
-    public function init()
+    public function getValue()
     {
-        $cacheHandler = $this->getCacheHandler();
-        $cacheKey = sprintf('%s-%s', $this->myNamespace, \Yii::$app->language);
-
-        if (($cache = $cacheHandler->get($cacheKey))) {
-            list($this->mapById, $this->mapByCode, $this->valueMapById, $this->valueMapByCode, $this->localizedValueMap) = $cache;
-        } else {
-            $this->validateModel('Classifier');
-            $this->validateModel('ClassifierValue');
-
-            $this->useI18n && $this->validateModel('ClassifierValueI18n', false);
-
-            $this->mapById = $this->valueMapById = $this->valueMapByCode = [];
-
-            foreach ($this->loadModelValues($this->classMap['Classifier']) as $classifierModel) {
-                $classifierAttrs = $classifierModel->getAttributes();
-
-                $this->mapById[$classifierModel->id] = $classifierAttrs;
-                $this->mapByCode[$classifierModel->code] = array(
-                    'classifier' => $classifierAttrs,
-                    'values' => [],
-                );
+        $args = func_get_args();
+        $value = null;
+        if (count($args) === 1)
+        {
+            if (!isset($this->valueMapById[$args[0]])) {
+                throw new InvalidParamException(sprintf('Accessed unknown classifier value ID "%s"', $args[0]));
             }
-
-            $this->useI18n && $this->loadLocalizedValues();
-
-            /** @var $valueModel \yii\db\ActiveRecord */
-            foreach ($this->loadModelValues($this->classMap['ClassifierValue']) as $valueModel) {
-                $classifierId = $valueModel->getAttribute($this->attributeMap['classifier_id']);
-                $classifierCode = $this->mapById[$classifierId][$this->attributeMap['code']];
-
-                $valueAttrs = $valueModel->getAttributes();
-                $valueAttrs['classifier_code'] = $classifierCode;
-
-                $valueId = $valueModel->getAttribute($this->attributeMap['id']);
-
-                $this->valueMapById[$valueId] = $valueAttrs;
-
-                $combinedCode = $this->mapById[$classifierId]['code'] . '_' . $valueModel->code;
-                $this->valueMapByCode[$combinedCode] = $valueAttrs;
-
-                $this->mapByCode[$classifierCode]['values'][$valueModel->code] = $valueAttrs;
+            $value = $this->valueMapById[$args[0]];
+        }
+        elseif (count($args) === 2)
+        {
+            if (!$this->get($args[0])) {
+                throw new InvalidParamException(sprintf('Accessed unknown classifier with code "%s"', $args[0]));
             }
-
-            if ($this->cachingDuration > 0) {
-                $cacheValue = array(
-                    $this->mapById,
-                    $this->mapByCode,
-                    $this->valueMapById,
-                    $this->valueMapByCode,
-                    $this->localizedValueMap
-                );
-                $cacheHandler->set($cacheKey, $cacheValue, $this->cachingDuration);
+            if (!isset($this->mapByCode[$args[0]]['values'][$args[1]])) {
+                throw new InvalidParamException(sprintf('Accessed unknown classifier value %s::%s', $args[0], $args[1]));
             }
+            $value = $this->mapByCode[$args[0]]['values'][$args[1]];
+        }
+        else
+        {
+            throw new InvalidCallException('Wrong number of parameters');
         }
 
-        parent::init();
+        if (null === $value)
+        {
+            throw new InvalidParamException('Could not find classifier value');
+        }
+
+        return $this->normalizeClassifierValue($value);
     }
 
     /**
-     * Provides default localization functionality. This must be done runtime, because app language can change
+     * Returns a list of classifier values by classifier ID or CODE
      *
+     * @param mixed $identifier
+     * @param bool $simpleList
+     * @return array
+     */
+    public function getList($identifier, $simpleList = false)
+    {
+        $classifier = $this->get($identifier);
+
+        $values = $this->mapByCode[$classifier->code]['values'];
+
+        if (true === $simpleList)
+        {
+            $list = ArrayHelper::map($values, 'id', 'name');
+        }
+        else
+        {
+            $list = array_map([$this, 'normalizeClassifierValue'], $values);
+        }
+
+        return $list;
+    }
+
+    /**
+     * @param array $classifier
+     * @return \classifier\entry\Classifier
+     */
+    protected function normalizeClassifier(array $classifier)
+    {
+        return new ClassifierEntry($classifier);
+    }
+
+    /**
+     * @param array $value
+     * @return Value
+     */
+    protected function normalizeClassifierValue(array $value)
+    {
+        $valueI18n = $this->localizeClassifierValue($value);
+        return new Value($valueI18n);
+    }
+
+    /**
      * @param array $value
      * @return array
      */
     protected function localizeClassifierValue(array $value)
     {
-        $keyValues = [
-            $value[$this->attributeMap['classifier_code']],
-            $value[$this->attributeMap['code']],
-            $this->language
-        ];
-        $name = implode('_', $keyValues);
-
-        if (is_array($this->localizedValueMap) && isset($this->localizedValueMap[$name])) {
-            $value['name'] = $this->localizedValueMap[$name];
-        }
         return $value;
-    }
-
-    /**
-     * Logs a message under the component's namespace
-     *
-     * @param string $message
-     * @param string $level CLogger::LEVEL_* constant
-     */
-    protected function log($message, $level)
-    {
-        $this->app->log->log($message, $level, $this->myNamespace);
-    }
-
-    /**
-     * Override this to implement another type of localization model
-     */
-    protected function loadLocalizedValues()
-    {
-        $this->localizedValueMap = [];
-
-        foreach ($this->loadModelValues($this->classMap['ClassifierValueI18n']) as $item) {
-            $name = strtoupper(
-                sprintf('%s_%s_%s', $item->classifier_code, $item->classifier_value_code, $item->language_code)
-            );
-            $this->localizedValueMap[$name] = $item->value;
-        }
-    }
-
-    /**
-     * Returns the cache handler for this component
-     *
-     * @return \yii\caching\Cache
-     */
-    protected function getCacheHandler()
-    {
-        if (($handler = \Yii::$app->{$this->cacheID})) {
-            return $handler;
-        }
-        return new DummyCache();
-    }
-
-    /**
-     * Loads and returns all elements from a model
-     *
-     * @param $modelClassName
-     * @return ActiveRecord[]
-     */
-    protected function loadModelValues($modelClassName)
-    {
-        /** @noinspection PhpUndefinedMethodInspection */
-        return $modelClassName::find()->all();
-    }
-
-    /**
-     * Validates model class name
-     *
-     * @param string $model
-     * @param bool $checkFields
-     * @throws \yii\base\InvalidConfigException
-     */
-    protected function validateModel($model, $checkFields = true)
-    {
-        if (!isset($model)) {
-            throw new InvalidConfigException('Model class name not set in configuration');
-        }
-
-        if (!isset($this->classMap[$model])) {
-            throw new InvalidConfigException(sprintf('Model "%s" not defined in classMap', $model));
-        }
-
-        $className = $this->classMap[$model];
-
-        if (!class_exists($className)) {
-            throw new InvalidConfigException(sprintf('Model class "%s" not found', $className));
-        }
-
-        $parentModel = '\yii\db\ActiveRecord';
-        if (!is_subclass_of($className, $parentModel)) {
-            throw new InvalidConfigException("{$className} has to be an instance of {$parentModel}");
-        }
-
-        /** @var $modelObject \yii\db\ActiveRecord */
-
-        if ($checkFields === true) {
-            $modelObject = new $className;
-
-            if (!$modelObject->hasAttribute($this->attributeMap['id'])) {
-                throw new InvalidConfigException("$model does not have an attribute called '{$this->attributeMap['id']}'");
-            }
-
-            if (!$modelObject->hasAttribute($this->attributeMap['code'])) {
-                throw new InvalidConfigException("$model does not have an attribute called '{$this->attributeMap['code']}'");
-            }
-        }
     }
 }
