@@ -5,7 +5,7 @@
  * @date 18.12.13
  */
 
-namespace classifier\base;
+namespace opus\classifier\base;
 
 
 use classifier\entry\Classifier as ClassifierEntry;
