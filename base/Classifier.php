@@ -8,8 +8,8 @@
 namespace opus\classifier\base;
 
 
-use classifier\entry\Classifier as ClassifierEntry;
-use classifier\entry\Value;
+use opus\classifier\entry\Classifier as ClassifierEntry;
+use opus\classifier\entry\Value;
 use yii\base\Component;
 use yii\base\InvalidCallException;
 use yii\base\InvalidParamException;
