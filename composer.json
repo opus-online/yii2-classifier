@@ -1,5 +1,5 @@
 {
-	"name": "opus-online/yii2-composer",
+	"name": "opus-online/yii2-classifier",
 	"description": "Classifier component for Yii2",
 	"version": "1.0.0-dev",
 	"keywords": ["yii", "yii2", "classifier"],
@@ -15,6 +15,10 @@
 			"email": "ivo@opus.ee"
 		}
 	],
+	"minimum-stability": "dev",
+	"require": {
+		"yiisoft/yii2": "*"
+	},
 	"autoload": {
 		"psr-0": {
 			"opus\\classifier\\": ""
