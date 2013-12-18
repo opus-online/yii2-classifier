@@ -20,7 +20,6 @@
  *  - Completely rewrote most of the functionality to support Yii2 and Composer
  *
  * @todo: usage
- * @todo: github & composer
  * @todo: auto-table-create
  * @todo: yaml
  */
