@@ -1,0 +1,28 @@
+{
+	"name": "opus-online/yii2-composer",
+	"description": "Classifier component for Yii2",
+	"version": "1.0.0-dev",
+	"keywords": ["yii", "yii2", "classifier"],
+	"licence": "MIT",
+	"homepage": "https://github.com/opus-online/yii2-classifier/",
+	"support": {
+		"issues": "https://github.com/opus-online/yii2-classifier/issues",
+		"source": "https://github.com/opus-online/yii2-classifier/"
+	},
+	"authors": [
+		{
+			"name": "Ivo Kund",
+			"email": "ivo@opus.ee"
+		}
+	],
+	"minimum-stability": "dev",
+	"require": {
+		"yiisoft/yii2": "*"
+	},
+	"autoload": {
+		"psr-0": {
+			"opus\\classifier\\": ""
+		}
+	},
+	"target-dir": "opus/classifier"
+}
