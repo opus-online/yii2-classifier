@@ -63,7 +63,7 @@ class Classifier extends Component
      *
      * @param string|int $identifier Number (ID) or String (code)
      * @throws \yii\base\InvalidParamException
-     * @return \classifier\entry\Classifier
+     * @return \opus\classifier\entry\Classifier
      */
     public function get($identifier)
     {
@@ -93,7 +93,7 @@ class Classifier extends Component
      *
      * @throws \yii\base\InvalidParamException
      * @throws \yii\base\InvalidCallException
-     * @return \classifier\entry\Value
+     * @return \opus\classifier\entry\Value
      */
     public function getValue()
     {
@@ -156,7 +156,7 @@ class Classifier extends Component
 
     /**
      * @param array $classifier
-     * @return \classifier\entry\Classifier
+     * @return \opus\classifier\entry\Classifier
      */
     protected function normalizeClassifier(array $classifier)
     {

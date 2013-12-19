@@ -1,27 +1,7 @@
 <?php
 /**
- * Implement this class to access classifier functionality.
-
- * ------- SETUP -------
- *
- * You can use this class in two ways:
- *
- *
- *
- * ------- CHANGELOG -------
- *
- * 2013-02-28
- *    - Initial commit
- * 2013-05-30
- *    - Support for localized values
- * 2013-05-31
- *  - Added $simpleList parameter to getList
- * 2013-12-18
- *  - Completely rewrote most of the functionality to support Yii2 and Composer
- *
- * @todo: usage
- * @todo: auto-table-create
- * @todo: yaml
+ * Classifier component for Yii2 projects.
+ * Please see the project page for information: https://github.com/opus-online/yii2-classifier
  */
 
 namespace opus\classifier;
