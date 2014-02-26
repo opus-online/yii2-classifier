@@ -62,11 +62,16 @@ class Classifier extends Component
      * Returns a classifier by its ID or CODE
      *
      * @param string|int $identifier Number (ID) or String (code)
+     * @throws \yii\base\InvalidCallException
      * @throws \yii\base\InvalidParamException
      * @return \opus\classifier\entry\Classifier
      */
     public function get($identifier)
     {
+        if (func_num_args() > 1) {
+            throw new InvalidCallException('Too many parameters for Classifier::get(). Perhaps you meant to call getValue()?');
+        }
+
         $classifier = null;
         if (is_numeric($identifier) && isset($this->mapById[$identifier]))
         {
