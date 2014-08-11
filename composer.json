@@ -1,10 +1,11 @@
 {
 	"name": "opus-online/yii2-classifier",
 	"description": "Classifier component for Yii2",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"keywords": ["yii", "yii2", "classifier"],
 	"licence": "MIT",
-	"homepage": "https://github.com/opus-online/yii2-classifier/",
+    "type": "yii2-extension",
+    "homepage": "https://github.com/opus-online/yii2-classifier/",
 	"support": {
 		"issues": "https://github.com/opus-online/yii2-classifier/issues",
 		"source": "https://github.com/opus-online/yii2-classifier/"
@@ -15,12 +16,13 @@
 			"email": "ivo@opus.ee"
 		}
 	],
+    "minimum-stability": "dev",
 	"require": {
-		"yiisoft/yii2": "*"
+		"yiisoft/yii2": "2.0.0-beta@dev"
 	},
 	"autoload": {
-		"psr-0": {
-			"opus\\classifier\\": ""
+		"psr-4": {
+			"opus\\classifier\\": "src"
 		}
 	},
 	"target-dir": "opus/classifier"
