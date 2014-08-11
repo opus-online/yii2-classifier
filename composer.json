@@ -24,6 +24,5 @@
 		"psr-4": {
 			"opus\\classifier\\": "src"
 		}
-	},
-	"target-dir": "opus/classifier"
+	}
 }
