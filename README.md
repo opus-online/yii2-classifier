@@ -48,3 +48,10 @@ $id = \Yii::$app->classifier->getValue('CLASSIFIER_CODE', 'VALUE_CODE')->id;
 $listOfObjects = \Yii::$app->classifier->getList(14);
 $simpleList = \Yii::$app->classifier->getList('MY_CODE', true);
 ```
+
+
+Changelog
+---------
+1.1.0
+* Added Yaml importer
+* Added PSR4 namespaces
