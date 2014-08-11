@@ -44,7 +44,6 @@ class Importer
         try {
             $filePath = \Yii::getAlias($pathAlias);
             $conf = Yaml::parse($filePath);
-            print_r($conf);
 
             foreach ($conf as $classifierCode => $classifierConf) {
                 $model = $this->importClassifier(
