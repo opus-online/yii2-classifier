@@ -1,7 +1,6 @@
 {
 	"name": "opus-online/yii2-classifier",
 	"description": "Classifier component for Yii2",
-	"version": "1.1.0",
 	"keywords": ["yii", "yii2", "classifier"],
 	"licence": "MIT",
     "type": "yii2-extension",

@@ -20,8 +20,16 @@ use yii\console\Controller;
  */
 class ClassifierController extends Controller
 {
+    /**
+     * @var string
+     */
     public $tablePrefix = 'tbl_';
 
+    /**
+     * Initializes classifier tables (imports db dumps with a given prefix)
+     *
+     * @throws \yii\db\Exception
+     */
     public function actionInit()
     {
         $path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'schema' . DIRECTORY_SEPARATOR . 'schema.sql';
@@ -39,15 +47,15 @@ class ClassifierController extends Controller
         }
     }
 
+    /**
+     * Loads classifier definition and updates tables
+     * @param $definitionAlias
+     * @throws \Exception
+     */
     public function actionUpdate($definitionAlias)
     {
-
         $classifier = \Yii::$app->classifier;
-
         $importer = new Importer($classifier);
-
         $importer->import($definitionAlias);
-
-
     }
 } 
