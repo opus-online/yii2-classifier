@@ -8,14 +8,8 @@ The esiest way to obtain the code is using Composer: just modify your `composer.
 
 ```json
 {
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/opus-online/yii2-classifier"
-		}
-	],
 	"require": {
-		"opus-online/yii2-classifier": "*"
+		"opus-online/yii2-classifier": "dev-master"
 	}
 }
 ```
@@ -26,16 +20,12 @@ Just add the main class as a component to your Yii2 project configuration. Most 
 ```php
 'classifier' => [
     'class' => '\opus\classifier\Classifier',
-    'modelPrefix' => '\common\models\Rr',
-    'useI18n' => true, // only if you want to use translated values
 ],
 ```
-With this configuration, 3 models are used to access classifier data (you can also change the model names with `classMap` parameter):
-* `RrClassifier`
-* `RrClassifierValue`
-* `RrClassifierValueI18n`
-
-The model classes can be generated using [Gii Model Generator](https://github.com/opus-online/yii2-giimodel) after (modifying and importing) the SQL file in `data` directory.  
+With this configuration, 3 tables are used to access classifier data (you can also change the table names in the configuration):
+* `ym_util_classifier`
+* `ym_util_classifier_value`
+* `ym_util_classifier_value_i18n`
 
 Basic usage
 -----
@@ -52,6 +42,8 @@ $simpleList = \Yii::$app->classifier->getList('MY_CODE', true);
 
 Changelog
 ---------
-1.1.0
+next release [dev-master]
 * Added Yaml importer
 * Added PSR4 namespaces
+* Removed models, added direct SQL access
+* Added proper migrations

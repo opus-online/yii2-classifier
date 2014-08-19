@@ -21,33 +21,6 @@ use yii\console\Controller;
 class ClassifierController extends Controller
 {
     /**
-     * @var string
-     */
-    public $tablePrefix = 'tbl_';
-
-    /**
-     * Initializes classifier tables (imports db dumps with a given prefix)
-     *
-     * @throws \yii\db\Exception
-     */
-    public function actionInit()
-    {
-        $path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'schema' . DIRECTORY_SEPARATOR . 'schema.sql';
-
-
-        $prompt = "Import schemat at \"$path\" using prefix \"{$this->tablePrefix}\"?";
-        $options = ['default' => true];
-
-        if ($this->prompt($prompt, $options)) {
-            $sql = file_get_contents($path);
-            $sql = str_replace('{{prefix}}', $this->tablePrefix, $sql);
-
-            \Yii::$app->db->createCommand($sql)->execute();
-            echo "Done\n";
-        }
-    }
-
-    /**
      * Loads classifier definition and updates tables
      * @param $definitionAlias
      * @throws \Exception

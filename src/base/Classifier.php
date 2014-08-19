@@ -42,14 +42,14 @@ class Classifier extends Component
      *
      * @var array
      */
-    protected $valueMapById = array();
+    protected $valueMapById;
 
     /**
-     * Holds classifier value objects and values
+     * Holds classifier value objects by classifier ID
      *
      * @var array
      */
-    protected $valueMapByCode = array();
+    protected $valueMapByClassifierId;
 
     /**
      * Holds localized classifier value objects and values
@@ -68,6 +68,10 @@ class Classifier extends Component
      */
     public function get($identifier)
     {
+        if (!isset($this->mapById)) {
+            $this->loadValues();
+        }
+
         if (func_num_args() > 1) {
             throw new InvalidCallException('Too many parameters for Classifier::get(). Perhaps you meant to call getValue()?');
         }
@@ -79,7 +83,7 @@ class Classifier extends Component
         }
         elseif (isset($this->mapByCode[$identifier]))
         {
-            $classifier = $this->mapByCode[$identifier]['classifier'];
+            $classifier = $this->mapByCode[$identifier];
         }
 
         if (null === $classifier)
@@ -102,6 +106,10 @@ class Classifier extends Component
      */
     public function getValue()
     {
+        if (!isset($this->mapById)) {
+            $this->loadValues();
+        }
+
         $args = func_get_args();
         $value = null;
         if (count($args) === 1)
@@ -113,13 +121,11 @@ class Classifier extends Component
         }
         elseif (count($args) === 2)
         {
-            if (!$this->get($args[0])) {
-                throw new InvalidParamException(sprintf('Accessed unknown classifier with code "%s"', $args[0]));
-            }
-            if (!isset($this->mapByCode[$args[0]]['values'][$args[1]])) {
+            $classifier = $this->get($args[0]);
+            if (!isset($this->valueMapByClassifierId[$classifier->id][$args[1]])) {
                 throw new InvalidParamException(sprintf('Accessed unknown classifier value %s::%s', $args[0], $args[1]));
             }
-            $value = $this->mapByCode[$args[0]]['values'][$args[1]];
+            $value = $this->valueMapByClassifierId[$classifier->id][$args[1]];
         }
         else
         {
@@ -145,11 +151,12 @@ class Classifier extends Component
     {
         $classifier = $this->get($identifier);
 
-        $values = $this->mapByCode[$classifier->code]['values'];
+        $values = $this->valueMapByClassifierId[$classifier->id];
 
         if (true === $simpleList)
         {
-            $list = ArrayHelper::map($values, 'id', 'name');
+            $list = array_map([$this, 'localizeClassifierValue'], $values);
+            $list = ArrayHelper::map($list, 'id', 'name');
         }
         else
         {
@@ -185,5 +192,17 @@ class Classifier extends Component
     protected function localizeClassifierValue(array $value)
     {
         return $value;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getComponentId()
+    {
+        return __NAMESPACE__;
+    }
+
+    protected function loadValues()
+    {
     }
 }

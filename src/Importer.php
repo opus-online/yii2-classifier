@@ -8,6 +8,7 @@
 namespace opus\classifier;
 
 use Symfony\Component\Yaml\Yaml;
+use yii\base\InvalidParamException;
 use yii\db\ActiveRecord;
 
 /**
@@ -46,7 +47,7 @@ class Importer
             $conf = Yaml::parse($filePath);
 
             foreach ($conf as $classifierCode => $classifierConf) {
-                $model = $this->importClassifier(
+                $this->importClassifier(
                     $classifierCode,
                     $classifierConf
                 );
@@ -54,7 +55,7 @@ class Importer
                 foreach ($classifierConf['values'] as $valueCode => $valueConf) {
                     $valueConf['sequence'] = ++$valueSequence;
                     $valueConf['code'] = $valueCode;
-                    $this->importValue($model, $valueConf);
+                    $this->importValue($classifierCode, $valueConf);
                 }
             }
 
@@ -72,63 +73,73 @@ class Importer
      */
     private function importClassifier($classifierCode, array $classifierConf)
     {
-        $modelClass = $this->classifier->classMap['Classifier'];
-        /** @var ActiveRecord $model */
-        /** @var ActiveRecord $modelClass */
-        $model = $modelClass::findOne(['code' => $classifierCode]);
+        $tableName = $this->classifier->classifierTable;
 
-        if ($model === null) {
-            $model = new $modelClass;
-            $model->setAttribute($this->classifier->attributeMap['code'], $classifierCode);
-        }
-        $model->name = $classifierConf['name'];
-        $model->is_system_classifier = empty($classifierConf['system']) ? 0 : 1;
-        if (!empty($classifierConf['description'])) {
-            $model->description = $classifierConf['description'];
-        }
+        $sql = "
+            INSERT INTO `{$tableName}` (`code`, `name`, `is_system_classifier`, `description`)
+            VALUES (:code, :name, :system, :description)
+            ON DUPLICATE KEY UPDATE
+                `name` = VALUES(`name`),
+                `is_system_classifier`= VALUES(`is_system_classifier`),
+                `description` = VALUES(`description`)
+        ";
 
-        $this->saveModel($model);
-        return $model;
+        $params = [
+            ':code' => $classifierCode,
+            ':name' => $classifierConf['name'],
+            ':system' => empty($classifierConf['system']) ? 0 : 1,
+            ':description' => empty($classifierConf['description']) ? null : $classifierConf['description'],
+        ];
+
+        $this->createCommand($sql, $params)->execute();
+
     }
 
 
-
     /**
-     * @param ActiveRecord $model
-     */
-    private function saveModel(ActiveRecord $model)
-    {
-        if (!$model->save()) {
-            throw new \RuntimeException('Could not save model');
-        }
-    }
-
-    /**
-     * @param ActiveRecord $classifier
+     * @param string $classifierCode
      * @param array $valueConf
      */
-    private function importValue(ActiveRecord $classifier, array $valueConf)
+    private function importValue($classifierCode, array $valueConf)
     {
-        $modelClass = $this->classifier->classMap['ClassifierValue'];
-        /** @var ActiveRecord $model */
-        $params = [
-            $this->classifier->attributeMap['classifier_id'] =>
-                $classifier->getAttribute($this->classifier->attributeMap['id']),
-            $this->classifier->attributeMap['code'] =>
-                $valueConf['code'],
-        ];
-        /** @var ActiveRecord $modelClass */
-        $model = $modelClass::findOne($params);
+        $classifierTable = $this->classifier->classifierTable;
+        $sql = "SELECT `id` FROM `{$classifierTable}` WHERE `code` = :code";
+        $classifierId = $this->createCommand($sql, [':code' => $classifierCode])
+            ->queryScalar();
 
-        if ($model === null) {
-            $model = new $modelClass;
-            $model->setAttributes($params);
+        if (null === $classifierId) {
+            throw new \RuntimeException('Could not match classifier ID');
         }
-        // numeric indices
-        $model->name = $valueConf[0];
-        $model->attributes = isset($valueConf[1]) ? $valueConf[1] : null;
-        $model->order_no = $valueConf['sequence'];
 
-        $this->saveModel($model);
+        $tableName = $this->classifier->classifierValueTable;
+
+        $sql = "
+            INSERT INTO `{$tableName}` (`classifier_id`, `code`, `name`, `attributes`, `order_no`)
+            VALUES (:classifierId, :code, :name, :attributes, :orderNo)
+            ON DUPLICATE KEY UPDATE
+                `name` = VALUES(`name`),
+                `attributes`= VALUES(`attributes`),
+                `order_no` = VALUES(`order_no`)
+        ";
+
+        $params = [
+            ':classifierId' => $classifierId,
+            ':code' => $valueConf['code'],
+            ':orderNo' => $valueConf['sequence'],
+            ':name' => $valueConf[0],
+            ':attributes' => isset($valueConf[1]) ? $valueConf[1] : null,
+        ];
+
+        $this->createCommand($sql, $params)->execute();
+    }
+
+    /**
+     * @param string $sql
+     * @param array $params
+     * @return \yii\db\Command
+     */
+    private function createCommand($sql, $params)
+    {
+        return \Yii::$app->db->createCommand($sql, $params);
     }
 }
