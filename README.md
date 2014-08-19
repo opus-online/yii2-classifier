@@ -14,7 +14,7 @@ The esiest way to obtain the code is using Composer: just modify your `composer.
 }
 ```
 
-Configuring
+Configuration
 -----------
 Just add the main class as a component to your Yii2 project configuration
 ```php
