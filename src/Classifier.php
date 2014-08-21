@@ -21,7 +21,6 @@ use yii\helpers\ArrayHelper;
  */
 class Classifier extends base\Classifier
 {
-
     /**
      * @var string
      */
