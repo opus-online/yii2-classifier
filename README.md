@@ -72,7 +72,7 @@ $simpleList = \Yii::$app->classifier->getList('MY_CODE', true);
 
 Changelog
 ---------
-next release [dev-master]
+1.1
 * Added Yaml importer
 * Added PSR4 namespaces
 * Removed models, added direct SQL access
