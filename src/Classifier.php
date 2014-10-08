@@ -10,7 +10,7 @@ use yii\base\Application;
 use yii\base\InvalidConfigException;
 use yii\BaseYii;
 use yii\caching\DummyCache;
-use yii\db\ActiveRecord;
+use yii\db\Query;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -97,7 +97,7 @@ class Classifier extends base\Classifier
         $this->mapByCode = ArrayHelper::index($classifiers, 'code');
 
         // load classifier values
-        $classifierValues = $this->loadFromTable($this->classifierValueTable);
+        $classifierValues = $this->loadFromTable($this->classifierValueTable, ['order_no' => SORT_ASC]);
         foreach ($classifierValues as &$value) {
             $value['classifier_code'] = $this->mapById[$value['classifier_id']]['code'];
             $this->valueMapByClassifierId[$value['classifier_id']][$value['code']] = $value;
@@ -172,12 +172,14 @@ class Classifier extends base\Classifier
      * Loads and returns all elements from a model
      *
      * @param $tableName
+     * @param array $order Optional order
+     * @throws InvalidConfigException
      * @return array
      */
-    private function loadFromTable($tableName)
+    private function loadFromTable($tableName, $order = [])
     {
-        $sql = "SELECT * FROM `{$tableName}`";
-        $command = $this->app->db->createCommand($sql);
-        return $command->queryAll();
+        /** @var Query $query */
+        $query = \Yii::createObject('yii\db\Query');
+        return $query->from($tableName)->orderBy($order)->all();
     }
 }
