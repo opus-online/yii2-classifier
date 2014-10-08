@@ -37,4 +37,9 @@ class Value extends Entry
      * @var string
      */
     public $value;
+
+    /**
+     * @var int
+     */
+    public $order_no;
 } 
