@@ -72,6 +72,11 @@ $simpleList = \Yii::$app->classifier->getList('MY_CODE', true);
 
 Changelog
 ---------
+1.1.1
+* Fixed PHP Notice bug when using caching
+* Fixed PHP Notice bug when using classifiers without values
+* Fixed classifier value ordering bug
+
 1.1
 * Added Yaml importer
 * Added PSR4 namespaces

@@ -82,7 +82,9 @@ class Classifier extends base\Classifier
         $cacheKey = sprintf('%s-%s', $this->getComponentId(), $this->language);
 
         if (($cache = $cacheHandler->get($cacheKey))) {
-            BaseYii::configure($this, $cache);
+            foreach ($cache as $key => $value) {
+                $this->$key = $value;
+            }
         }
 
         parent::init();
@@ -95,9 +97,11 @@ class Classifier extends base\Classifier
 
         $this->mapById = ArrayHelper::index($classifiers, 'id');
         $this->mapByCode = ArrayHelper::index($classifiers, 'code');
+        // fill array with empty values
+        $this->valueMapByClassifierId = array_combine(array_keys($this->mapById), array_fill(0, count($this->mapById), []));
 
         // load classifier values
-        $classifierValues = $this->loadFromTable($this->classifierValueTable, ['order_no' => SORT_ASC]);
+        $classifierValues = $this->loadFromTable($this->classifierValueTable);
         foreach ($classifierValues as &$value) {
             $value['classifier_code'] = $this->mapById[$value['classifier_id']]['code'];
             $this->valueMapByClassifierId[$value['classifier_id']][$value['code']] = $value;
