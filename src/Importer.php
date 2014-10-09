@@ -52,10 +52,12 @@ class Importer
                     $classifierConf
                 );
                 $valueSequence = 0;
-                foreach ($classifierConf['values'] as $valueCode => $valueConf) {
-                    $valueConf['sequence'] = ++$valueSequence;
-                    $valueConf['code'] = $valueCode;
-                    $this->importValue($classifierCode, $valueConf);
+                if (!empty($classifierConf['values'])) {
+                    foreach ($classifierConf['values'] as $valueCode => $valueConf) {
+                        $valueConf['sequence'] = ++$valueSequence;
+                        $valueConf['code'] = $valueCode;
+                        $this->importValue($classifierCode, $valueConf);
+                    }
                 }
             }
 
