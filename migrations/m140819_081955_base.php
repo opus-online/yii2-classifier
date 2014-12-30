@@ -8,7 +8,7 @@ use yii\db\Schema;
  * @SuppressWarnings(ShortMethodName)
  * @SuppressWarnings(CamelCaseClassName)
  */
-class m140819_081955_base extends \console\components\Migration
+class m140819_081955_base extends \yii\db\Migration
 {
     /**
      * @throws yii\base\InvalidConfigException

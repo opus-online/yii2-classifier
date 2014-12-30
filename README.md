@@ -16,11 +16,17 @@ The esiest way to obtain the code is using Composer: just modify your `composer.
 
 Configuration
 -----------
-Just add the main class as a component to your Yii2 project configuration
+Just add the main class as a component to your Yii2 project common configuration
 ```php
 'classifier' => [
     'class' => '\opus\classifier\Classifier',
 ],
+```
+And the classifier controller to your console configuration
+```php
+    'controllerMap' => [
+        'classifier' => \opus\classifier\ClassifierController::class,
+    ],
 ```
 
 And create the necessary tables using the command

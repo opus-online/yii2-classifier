@@ -8,8 +8,6 @@
 namespace opus\classifier;
 
 
-use common\models\Classifier;
-use Symfony\Component\Yaml\Yaml;
 use yii\console\Controller;
 
 /**
