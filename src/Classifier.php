@@ -62,7 +62,7 @@ class Classifier extends base\Classifier
      * @throws \yii\base\InvalidConfigException
      * @internal param array $params
      */
-    public function __construct($config)
+    public function __construct($config = [])
     {
         $this->app = \Yii::$app;
         $this->language = $this->app->language;
