@@ -45,7 +45,7 @@ class Importer
         try {
             if (is_string($pathAliasOrArray))
             {
-                $filePath = \Yii::getAlias($pathAlias);
+                $filePath = \Yii::getAlias($pathAliasOrArray);
                 $conf = Yaml::parse($filePath);
             }
             elseif (is_array($pathAliasOrArray))
