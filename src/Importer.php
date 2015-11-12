@@ -50,6 +50,8 @@ class Importer
             }
             elseif (is_array($pathAliasOrArray))
                 $conf = $pathAliasOrArray;
+            else
+                throw new InvalidParamException("Invalid parameter value \$pathAliasOrArray");
 
             foreach ($conf as $classifierCode => $classifierConf) {
                 $this->importClassifier(
