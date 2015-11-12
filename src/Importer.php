@@ -34,7 +34,7 @@ class Importer
     }
 
     /**
-     * @param array|string $pathAlias
+     * @param array|string $pathAliasOrArray
      * @throws \Exception
      * @throws \yii\db\Exception
      */
