@@ -34,17 +34,22 @@ class Importer
     }
 
     /**
-     * @param string $pathAlias
+     * @param array|string $pathAlias
      * @throws \Exception
      * @throws \yii\db\Exception
      */
-    public function import($pathAlias)
+    public function import($pathAliasOrArray)
     {
         $transaction = \Yii::$app->db->beginTransaction();
 
         try {
-            $filePath = \Yii::getAlias($pathAlias);
-            $conf = Yaml::parse($filePath);
+            if (is_string($pathAliasOrArray))
+            {
+                $filePath = \Yii::getAlias($pathAlias);
+                $conf = Yaml::parse($filePath);
+            }
+            elseif (is_array($pathAliasOrArray))
+                $conf = $pathAliasOrArray;
 
             foreach ($conf as $classifierCode => $classifierConf) {
                 $this->importClassifier(
