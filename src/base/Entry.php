@@ -8,7 +8,7 @@
 namespace opus\classifier\base;
 
 use ArrayAccess;
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * Class Entry
@@ -16,7 +16,7 @@ use yii\base\Object;
  * @author Ivo Kund <ivo@opus.ee>
  * @package classifier\base
  */
-class Entry extends Object implements ArrayAccess
+class Entry extends BaseObject implements ArrayAccess
 {
 
     /**
