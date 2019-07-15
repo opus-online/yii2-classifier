@@ -17,7 +17,7 @@
     "minimum-stability": "dev",
 	"require": {
 		"yiisoft/yii2": "*",
-        "symfony/yaml": "3.4.*"
+        "symfony/yaml": "2.8.*"
 	},
 	"autoload": {
 		"psr-4": {
