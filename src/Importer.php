@@ -7,9 +7,12 @@
 
 namespace opus\classifier;
 
+use RuntimeException;
 use Symfony\Component\Yaml\Yaml;
-use yii\base\InvalidParamException;
+use Yii;
 use yii\db\ActiveRecord;
+use yii\db\Command;
+use yii\db\Exception;
 
 /**
  * Imports classifiers from a definition file
@@ -36,14 +39,14 @@ class Importer
     /**
      * @param string $pathAlias
      * @throws \Exception
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     public function import($pathAlias)
     {
-        $transaction = \Yii::$app->db->beginTransaction();
+        $transaction = Yii::$app->db->beginTransaction();
 
         try {
-            $filePath = \Yii::getAlias($pathAlias);
+            $filePath = Yii::getAlias($pathAlias);
             $conf = Yaml::parse($filePath);
 
             foreach ($conf as $classifierCode => $classifierConf) {
@@ -70,6 +73,7 @@ class Importer
      * @param string $classifierCode
      * @param array $classifierConf
      * @return ActiveRecord
+     * @throws Exception
      */
     private function importClassifier($classifierCode, array $classifierConf)
     {
@@ -108,7 +112,7 @@ class Importer
             ->queryScalar();
 
         if (null === $classifierId) {
-            throw new \RuntimeException('Could not match classifier ID');
+            throw new RuntimeException('Could not match classifier ID');
         }
 
         $tableName = $this->classifier->classifierValueTable;
@@ -136,10 +140,10 @@ class Importer
     /**
      * @param string $sql
      * @param array $params
-     * @return \yii\db\Command
+     * @return Command
      */
     private function createCommand($sql, $params)
     {
-        return \Yii::$app->db->createCommand($sql, $params);
+        return Yii::$app->db->createCommand($sql, $params);
     }
 }
